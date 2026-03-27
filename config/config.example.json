@@ -1,0 +1,20 @@
+{
+  "anthropic": {
+    "apiKey": "",
+    "model": "claude-sonnet-4-20250514",
+    "maxTokens": 4096,
+    "temperature": 0.0
+  },
+  "cli": {
+    "prompt": "claude> ",
+    "historyFile": "~/.claude-code/history.json",
+    "logLevel": "info"
+  },
+  "tools": {
+    "allowedPaths": ["~"],
+    "shell": {
+      "enabled": true,
+      "timeout": "2m"
+    }
+  }
+}
