@@ -2,6 +2,8 @@
 
 A Go implementation of Claude Code - an AI-powered CLI tool that brings the power of Claude to your terminal.
 
+[中文文档](README_CN.md) | [English](README.md)
+
 ## Features
 
 - **Interactive Chat**: Chat with Claude in an interactive REPL
