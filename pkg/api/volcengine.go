@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
 )
 
 const (
@@ -79,26 +78,26 @@ func NewVolcengineClient(options ...VolcengineClientOption) *VolcengineClient {
 
 // VolcengineChatRequest represents a request to the Volcengine API
 type VolcengineChatRequest struct {
-	Model       string             `json:"model"`
+	Model       string              `json:"model"`
 	Messages    []VolcengineMessage `json:"messages"`
-	MaxTokens   int                `json:"max_tokens"`
+	MaxTokens   int                 `json:"max_tokens"`
 	Temperature float64             `json:"temperature,omitempty"`
 	Tools       []ToolDefinition    `json:"tools,omitempty"`
-	Stream      bool               `json:"stream"`
+	Stream      bool                `json:"stream"`
 }
 
 // VolcengineMessage represents a message in the Volcengine conversation
 type VolcengineMessage struct {
-	Role    string                 `json:"role"`
+	Role    string                   `json:"role"`
 	Content []VolcengineContentBlock `json:"content"`
 }
 
 // VolcengineContentBlock represents a content block in a Volcengine message
 type VolcengineContentBlock struct {
-	Type      string                 `json:"type"`
-	Text      string                 `json:"text,omitempty"`
-	ToolCallID string                 `json:"tool_call_id,omitempty"`
-	ToolCalls []VolcengineToolCall   `json:"tool_calls,omitempty"`
+	Type       string               `json:"type"`
+	Text       string               `json:"text,omitempty"`
+	ToolCallID string               `json:"tool_call_id,omitempty"`
+	ToolCalls  []VolcengineToolCall `json:"tool_calls,omitempty"`
 }
 
 // VolcengineToolCall represents a tool call in Volcengine
@@ -110,8 +109,8 @@ type VolcengineToolCall struct {
 
 // VolcengineFunctionCall represents a function call
 type VolcengineFunctionCall struct {
-	Name      string                 `json:"name"`
-	Arguments string                 `json:"arguments"`
+	Name      string `json:"name"`
+	Arguments string `json:"arguments"`
 }
 
 // StreamChat sends a chat request and returns a channel of events
@@ -256,11 +255,11 @@ func (c *VolcengineClient) streamResponse(ctx context.Context, body io.ReadClose
 			Created int64  `json:"created"`
 			Model   string `json:"model"`
 			Choices []struct {
-				Index        int `json:"index"`
-				Delta        struct {
-					Content      string `json:"content,omitempty"`
-					ToolCalls   []VolcengineToolCall `json:"tool_calls,omitempty"`
-					Role        string `json:"role,omitempty"`
+				Index int `json:"index"`
+				Delta struct {
+					Content   string               `json:"content,omitempty"`
+					ToolCalls []VolcengineToolCall `json:"tool_calls,omitempty"`
+					Role      string               `json:"role,omitempty"`
 				} `json:"delta"`
 				FinishReason string `json:"finish_reason"`
 			} `json:"choices"`
