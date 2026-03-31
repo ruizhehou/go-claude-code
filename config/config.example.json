@@ -1,9 +1,17 @@
 {
+  "provider": "anthropic",
   "anthropic": {
     "apiKey": "",
     "model": "claude-sonnet-4-20250514",
     "maxTokens": 4096,
     "temperature": 0.0
+  },
+  "volcengine": {
+    "apiKey": "",
+    "model": "ep-20241125174025-l8jx8",
+    "maxTokens": 4096,
+    "temperature": 0.0,
+    "baseUrl": "https://ark.cn-beijing.volces.com/api/v3"
   },
   "cli": {
     "prompt": "claude> ",

@@ -5,12 +5,14 @@ import (
 	"path/filepath"
 )
 
-// Config represents the application configuration
+// Config represents application configuration
 type Config struct {
-	Anthropic AnthropicConfig `json:"anthropic"`
-	CLI       CLIConfig       `json:"cli"`
-	MCP       MCPConfig       `json:"mcp"`
-	Tools     ToolsConfig     `json:"tools"`
+	Anthropic   AnthropicConfig   `json:"anthropic"`
+	Volcengine  VolcengineConfig  `json:"volcengine"`
+	Provider    string           `json:"provider"` // "anthropic" or "volcengine"
+	CLI         CLIConfig         `json:"cli"`
+	MCP         MCPConfig         `json:"mcp"`
+	Tools       ToolsConfig       `json:"tools"`
 }
 
 // AnthropicConfig represents Anthropic API configuration
@@ -19,6 +21,15 @@ type AnthropicConfig struct {
 	Model       string  `json:"model"`
 	MaxTokens   int     `json:"maxTokens"`
 	Temperature float64 `json:"temperature"`
+}
+
+// VolcengineConfig represents Volcengine API configuration
+type VolcengineConfig struct {
+	APIKey      string  `json:"apiKey"`
+	Model       string  `json:"model"`
+	MaxTokens   int     `json:"maxTokens"`
+	Temperature float64 `json:"temperature"`
+	BaseURL     string  `json:"baseUrl"`
 }
 
 // CLIConfig represents CLI configuration
@@ -58,10 +69,17 @@ type ShellConfig struct {
 func DefaultConfig() *Config {
 	homeDir, _ := os.UserHomeDir()
 	return &Config{
+		Provider: "anthropic",
 		Anthropic: AnthropicConfig{
 			Model:       "claude-sonnet-4-20250514",
 			MaxTokens:   4096,
 			Temperature: 0.0,
+		},
+		Volcengine: VolcengineConfig{
+			Model:       "ep-20241125174025-l8jx8",
+			MaxTokens:   4096,
+			Temperature: 0.0,
+			BaseURL:     "https://ark.cn-beijing.volces.com/api/v3",
 		},
 		CLI: CLIConfig{
 			Prompt:      "claude> ",

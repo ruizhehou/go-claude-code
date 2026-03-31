@@ -77,17 +77,22 @@ func loadMCPServers(cfg *Config, path string) error {
 
 // loadFromEnv loads configuration from environment variables
 func loadFromEnv(cfg *Config) {
+	// Provider
+	if provider := os.Getenv("CLAUDE_PROVIDER"); provider != "" {
+		cfg.Provider = provider
+	}
+
 	// Anthropic API key
 	if apiKey := os.Getenv("ANTHROPIC_API_KEY"); apiKey != "" {
 		cfg.Anthropic.APIKey = apiKey
 	}
 
-	// Model
+	// Anthropic Model
 	if model := os.Getenv("CLAUDE_MODEL"); model != "" {
 		cfg.Anthropic.Model = model
 	}
 
-	// Max tokens
+	// Anthropic Max tokens
 	if maxTokens := os.Getenv("CLAUDE_MAX_TOKENS"); maxTokens != "" {
 		var mt int
 		if _, err := fmt.Sscanf(maxTokens, "%d", &mt); err == nil {
@@ -95,12 +100,43 @@ func loadFromEnv(cfg *Config) {
 		}
 	}
 
-	// Temperature
+	// Anthropic Temperature
 	if temp := os.Getenv("CLAUDE_TEMPERATURE"); temp != "" {
 		var t float64
 		if _, err := fmt.Sscanf(temp, "%f", &t); err == nil {
 			cfg.Anthropic.Temperature = t
 		}
+	}
+
+	// Volcengine API key
+	if apiKey := os.Getenv("VOLCENGINE_API_KEY"); apiKey != "" {
+		cfg.Volcengine.APIKey = apiKey
+	}
+
+	// Volcengine Model
+	if model := os.Getenv("VOLCENGINE_MODEL"); model != "" {
+		cfg.Volcengine.Model = model
+	}
+
+	// Volcengine Max tokens
+	if maxTokens := os.Getenv("VOLCENGINE_MAX_TOKENS"); maxTokens != "" {
+		var mt int
+		if _, err := fmt.Sscanf(maxTokens, "%d", &mt); err == nil {
+			cfg.Volcengine.MaxTokens = mt
+		}
+	}
+
+	// Volcengine Temperature
+	if temp := os.Getenv("VOLCENGINE_TEMPERATURE"); temp != "" {
+		var t float64
+		if _, err := fmt.Sscanf(temp, "%f", &t); err == nil {
+			cfg.Volcengine.Temperature = t
+		}
+	}
+
+	// Volcengine Base URL
+	if baseURL := os.Getenv("VOLCENGINE_BASE_URL"); baseURL != "" {
+		cfg.Volcengine.BaseURL = baseURL
 	}
 
 	// Log level
@@ -137,24 +173,36 @@ func Save(cfg *Config, path string) error {
 
 // Validate validates the configuration
 func Validate(cfg *Config) error {
-	// Check API key
-	if cfg.Anthropic.APIKey == "" {
-		return fmt.Errorf("anthropic API key is required (set ANTHROPIC_API_KEY environment variable)")
-	}
-
-	// Check model
-	if cfg.Anthropic.Model == "" {
-		return fmt.Errorf("anthropic model is required")
-	}
-
-	// Check max tokens
-	if cfg.Anthropic.MaxTokens <= 0 {
-		return fmt.Errorf("max tokens must be positive")
-	}
-
-	// Check temperature
-	if cfg.Anthropic.Temperature < 0 || cfg.Anthropic.Temperature > 1 {
-		return fmt.Errorf("temperature must be between 0 and 1")
+	// Check provider
+	switch cfg.Provider {
+	case "anthropic":
+		if cfg.Anthropic.APIKey == "" {
+			return fmt.Errorf("anthropic API key is required (set ANTHROPIC_API_KEY environment variable)")
+		}
+		if cfg.Anthropic.Model == "" {
+			return fmt.Errorf("anthropic model is required")
+		}
+		if cfg.Anthropic.MaxTokens <= 0 {
+			return fmt.Errorf("max tokens must be positive")
+		}
+		if cfg.Anthropic.Temperature < 0 || cfg.Anthropic.Temperature > 1 {
+			return fmt.Errorf("temperature must be between 0 and 1")
+		}
+	case "volcengine":
+		if cfg.Volcengine.APIKey == "" {
+			return fmt.Errorf("volcengine API key is required (set VOLCENGINE_API_KEY environment variable)")
+		}
+		if cfg.Volcengine.Model == "" {
+			return fmt.Errorf("volcengine model is required")
+		}
+		if cfg.Volcengine.MaxTokens <= 0 {
+			return fmt.Errorf("max tokens must be positive")
+		}
+		if cfg.Volcengine.Temperature < 0 || cfg.Volcengine.Temperature > 1 {
+			return fmt.Errorf("temperature must be between 0 and 1")
+		}
+	default:
+		return fmt.Errorf("invalid provider '%s', must be 'anthropic' or 'volcengine'", cfg.Provider)
 	}
 
 	// Check MCP servers

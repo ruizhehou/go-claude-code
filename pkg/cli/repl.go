@@ -12,10 +12,15 @@ import (
 	"github.com/houruizhe/go-claude-code/pkg/tools"
 )
 
+// APIClient is an interface for API clients
+type APIClient interface {
+	StreamChat(ctx context.Context, req *api.ChatRequest) (<-chan *api.ChatEvent, error)
+}
+
 // REPL represents the Read-Eval-Print Loop
 type REPL struct {
 	config   *config.Config
-	client   *api.Client
+	client   APIClient
 	registry *tools.Registry
 	executor *tools.Executor
 
@@ -24,7 +29,7 @@ type REPL struct {
 }
 
 // NewREPL creates a new REPL
-func NewREPL(cfg *config.Config, client *api.Client, registry *tools.Registry, executor *tools.Executor) *REPL {
+func NewREPL(cfg *config.Config, client APIClient, registry *tools.Registry, executor *tools.Executor) *REPL {
 	return &REPL{
 		config:   cfg,
 		client:   client,
@@ -148,7 +153,7 @@ func (r *REPL) chat(ctx context.Context, execCtx *tools.ExecutionContext) error 
 	req := &api.ChatRequest{
 		Messages:    r.messages,
 		Tools:       r.registry.ToAPIDefinitions(),
-		Temperature: r.config.Anthropic.Temperature,
+		Temperature: r.getTemperature(),
 	}
 
 	// Stream response
@@ -238,6 +243,18 @@ func (r *REPL) chat(ctx context.Context, execCtx *tools.ExecutionContext) error 
 
 	fmt.Println()
 	return nil
+}
+
+// getTemperature returns the temperature based on the provider
+func (r *REPL) getTemperature() float64 {
+	switch r.config.Provider {
+	case "anthropic":
+		return r.config.Anthropic.Temperature
+	case "volcengine":
+		return r.config.Volcengine.Temperature
+	default:
+		return 0.0
+	}
 }
 
 // executeTool executes a tool

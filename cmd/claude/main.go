@@ -15,6 +15,11 @@ import (
 	"github.com/houruizhe/go-claude-code/pkg/tools/builtin"
 )
 
+// APIClient is an interface for API clients
+type APIClient interface {
+	StreamChat(ctx context.Context, req *api.ChatRequest) (<-chan *api.ChatEvent, error)
+}
+
 func main() {
 	// Parse command line arguments
 	configPath := ""
@@ -40,12 +45,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Create API client
-	apiClient := api.NewClient(
-		api.WithAPIKey(cfg.Anthropic.APIKey),
-		api.WithModel(cfg.Anthropic.Model),
-		api.WithMaxTokens(cfg.Anthropic.MaxTokens),
-	)
+	// Create API client based on provider
+	var apiClient APIClient
+	switch cfg.Provider {
+	case "anthropic":
+		apiClient = api.NewClient(
+			api.WithAPIKey(cfg.Anthropic.APIKey),
+			api.WithModel(cfg.Anthropic.Model),
+			api.WithMaxTokens(cfg.Anthropic.MaxTokens),
+		)
+		fmt.Printf("Using Anthropic API (model: %s)\n", cfg.Anthropic.Model)
+	case "volcengine":
+		apiClient = api.NewVolcengineClient(
+			api.WithVolcengineAPIKey(cfg.Volcengine.APIKey),
+			api.WithVolcengineModel(cfg.Volcengine.Model),
+			api.WithVolcengineMaxTokens(cfg.Volcengine.MaxTokens),
+			api.WithVolcengineBaseURL(cfg.Volcengine.BaseURL),
+		)
+		fmt.Printf("Using Volcengine API (model: %s)\n", cfg.Volcengine.Model)
+	default:
+		fmt.Fprintf(os.Stderr, "Unknown provider: %s\n", cfg.Provider)
+		os.Exit(1)
+	}
 
 	// Create tool registry
 	registry := tools.NewRegistry()

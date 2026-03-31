@@ -33,24 +33,58 @@ make install
 
 ### 环境变量
 
-- `ANTHROPIC_API_KEY`：你的 Anthropic API 密钥（必需）
-- `CLAUDE_MODEL`：使用的模型（默认：`claude-sonnet-4-20250514`）
+- `CLAUDE_PROVIDER`：使用的 API 提供商 - `anthropic`（默认）或 `volcengine`
+- `ANTHROPIC_API_KEY`：你的 Anthropic API 密钥（使用 Anthropic 时必需）
+- `CLAUDE_MODEL`：使用的模型（Anthropic 默认：`claude-sonnet-4-20250514`）
 - `CLAUDE_MAX_TOKENS`：响应的最大 token 数（默认：4096）
 - `CLAUDE_TEMPERATURE`：响应温度（默认：0.0）
 - `CLAUDE_ALLOWED_PATHS`：允许访问的文件路径（冒号分隔）
 - `CLAUDE_SHELL_ENABLED`：启用/禁用 shell 工具（默认：true）
+- `VOLCENGINE_API_KEY`：你的火山引擎 API 密钥（使用火山引擎时必需）
+- `VOLCENGINE_MODEL`：火山引擎模型（默认：`ep-20241125174025-l8jx8`）
+- `VOLCENGINE_BASE_URL`：火山引擎 API 基础 URL（默认：`https://ark.cn-beijing.volces.com/api/v3`）
 
 ### 配置文件
 
 在 `~/.claude-code/config.json` 创建配置文件：
 
+**使用 Anthropic 提供商（默认）：**
+
 ```json
 {
+  "provider": "anthropic",
   "anthropic": {
     "apiKey": "你的-api-key",
     "model": "claude-sonnet-4-20250514",
     "maxTokens": 4096,
     "temperature": 0.0
+  },
+  "cli": {
+    "prompt": "claude> ",
+    "historyFile": "~/.claude-code/history.json",
+    "logLevel": "info"
+  },
+  "tools": {
+    "allowedPaths": ["/home/user/projects"],
+    "shell": {
+      "enabled": true,
+      "timeout": "2m"
+    }
+  }
+}
+```
+
+**使用火山引擎提供商：**
+
+```json
+{
+  "provider": "volcengine",
+  "volcengine": {
+    "apiKey": "你的火山引擎-api-key",
+    "model": "ep-20241125174025-l8jx8",
+    "maxTokens": 4096,
+    "temperature": 0.0,
+    "baseUrl": "https://ark.cn-beijing.volces.com/api/v3"
   },
   "cli": {
     "prompt": "claude> ",
@@ -93,6 +127,13 @@ make install
 ### 基本对话
 
 ```bash
+# 使用 Anthropic（默认）
+export ANTHROPIC_API_KEY=sk-ant-xxx
+./bin/claude
+
+# 使用火山引擎
+export CLAUDE_PROVIDER=volcengine
+export VOLCENGINE_API_KEY=你的火山引擎-api-key
 ./bin/claude
 ```
 
@@ -143,7 +184,7 @@ claude> 把 /path/to/file.txt 中的 "旧文本" 替换成 "新文本"
 go-claude-code/
 ├── cmd/claude/          # CLI 入口点
 ├── pkg/
-│   ├── api/            # Anthropic API 客户端
+│   ├── api/            # API 客户端（Anthropic、火山引擎）
 │   ├── cli/            # REPL 实现
 │   ├── tools/          # 工具系统
 │   │   ├── builtin/    # 内置工具
@@ -186,8 +227,13 @@ make fmt
 ## 快速开始
 
 ```bash
-# 1. 设置 API 密钥
+# 1. 设置 API 密钥（选择一个提供商）
+# 使用 Anthropic（默认）：
 export ANTHROPIC_API_KEY=sk-ant-xxx
+
+# 或使用火山引擎：
+export CLAUDE_PROVIDER=volcengine
+export VOLCENGINE_API_KEY=你的火山引擎-api-key
 
 # 2. 运行程序
 ./bin/claude
@@ -200,20 +246,40 @@ claude> 帮我写一个 Hello World 程序
 
 ### 如何获取 API 密钥？
 
-访问 [Anthropic 控制台](https://console.anthropic.com/) 注册账号并获取 API 密钥。
+**Anthropic**：访问 [Anthropic 控制台](https://console.anthropic.com/) 注册账号并获取 API 密钥。
+
+**火山引擎**：访问 [火山引擎控制台](https://console.volcengine.com/) 注册账号并获取 API 密钥。
 
 ### 支持哪些模型？
 
+**Anthropic 提供商：**
 目前支持所有 Anthropic Claude 模型，包括：
 - `claude-sonnet-4-20250514`（默认）
 - `claude-opus-4-20250514`
 - `claude-haiku-4-20250514`
+
+**火山引擎提供商：**
+支持火山引擎的豆包模型，如：
+- `ep-20241125174025-l8jx8`（默认）
+- 其他自定义推理端点
 
 ### 如何连接 MCP 服务器？
 
 1. 创建 `~/.claude-code/servers.json` 配置文件
 2. 添加你需要的 MCP 服务器配置
 3. 重新启动程序，工具会自动加载
+
+### 如何切换提供商？
+
+设置 `CLAUDE_PROVIDER` 环境变量或在配置文件中配置：
+
+```bash
+# 使用 Anthropic（默认）
+export CLAUDE_PROVIDER=anthropic
+
+# 使用火山引擎
+export CLAUDE_PROVIDER=volcengine
+```
 
 ## 许可证
 
