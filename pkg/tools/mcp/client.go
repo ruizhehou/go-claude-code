@@ -216,3 +216,144 @@ func unmarshalResult(result interface{}, v interface{}) error {
 	}
 	return json.Unmarshal(data, v)
 }
+
+// Prompt management functions
+
+// ListPrompts lists available prompts from the server
+func (c *Client) ListPrompts(ctx context.Context) ([]mcp.Prompt, error) {
+	resp, err := c.rpc.SendRequest(mcp.MethodListPrompts, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var result mcp.ListPromptsResult
+	if err := unmarshalResult(resp.Result, &result); err != nil {
+		return nil, err
+	}
+
+	return result.Prompts, nil
+}
+
+// GetPrompt retrieves a specific prompt by name
+func (c *Client) GetPrompt(ctx context.Context, name string) (*mcp.Prompt, error) {
+	params := mcp.GetPromptParams{
+		Name: name,
+	}
+
+	resp, err := c.rpc.SendRequest(mcp.MethodGetPrompt, params)
+	if err != nil {
+		return nil, err
+	}
+
+	var result mcp.GetPromptResult
+	if err := unmarshalResult(resp.Result, &result); err != nil {
+		return nil, err
+	}
+
+	return &result.Prompt, nil
+}
+
+// Resource management functions
+
+// ListResources lists available resources from the server
+func (c *Client) ListResources(ctx context.Context) ([]mcp.Resource, error) {
+	resp, err := c.rpc.SendRequest(mcp.MethodListResources, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var result mcp.ListResourcesResult
+	if err := unmarshalResult(resp.Result, &result); err != nil {
+		return nil, err
+	}
+
+	return result.Resources, nil
+}
+
+// ReadResource reads a resource by name
+func (c *Client) ReadResource(ctx context.Context, name string) (*mcp.ResourceContent, error) {
+	params := mcp.ReadResourceParams{
+		Name: name,
+	}
+
+	resp, err := c.rpc.SendRequest(mcp.MethodReadResource, params)
+	if err != nil {
+		return nil, err
+	}
+
+	var result mcp.ReadResourceResult
+	if err := unmarshalResult(resp.Result, &result); err != nil {
+		return nil, err
+	}
+
+	return &result.Content, nil
+}
+
+// ListResourceTemplates lists available resource templates
+func (c *Client) ListResourceTemplates(ctx context.Context) ([]mcp.ResourceTemplate, error) {
+	resp, err := c.rpc.SendRequest(mcp.MethodListResourceTemplates, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var result mcp.ListResourceTemplatesResult
+	if err := unmarshalResult(resp.Result, &result); err != nil {
+		return nil, err
+	}
+
+	return result.Templates, nil
+}
+
+// Registry integration
+
+// RegisterTools registers all MCP tools to the given registry
+func (c *Client) RegisterTools(registry *tools.Registry) error {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	for _, tool := range c.tools {
+		if err := registry.Register(tool); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// UnregisterTools unregisters all MCP tools from the given registry
+func (c *Client) UnregisterTools(registry *tools.Registry) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	for name := range c.tools {
+		registry.Unregister(name)
+	}
+}
+
+// Event listening
+
+// StartListening starts listening for notifications from the server
+func (c *Client) StartListening(ctx context.Context, handler func(*mcp.Notification)) error {
+	if c.rpc == nil {
+		return fmt.Errorf("client not connected")
+	}
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				notification, err := c.rpc.ReceiveNotification()
+				if err != nil {
+					return
+				}
+				if notification != nil && handler != nil {
+					handler(notification)
+				}
+			}
+		}
+	}()
+
+	return nil
+}

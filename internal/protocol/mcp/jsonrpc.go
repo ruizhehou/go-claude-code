@@ -127,6 +127,36 @@ func (j *JSONRPC) ReadMessage() (*Response, error) {
 	return nil, nil
 }
 
+// ReceiveNotification receives a JSON-RPC notification from the stream
+func (j *JSONRPC) ReceiveNotification() (*Notification, error) {
+	var raw map[string]json.RawMessage
+	if err := j.dec.Decode(&raw); err != nil {
+		return nil, fmt.Errorf("failed to decode notification: %w", err)
+	}
+
+	// Check if it's a notification (no id)
+	if _, ok := raw["id"]; ok {
+		return nil, fmt.Errorf("expected notification but got response")
+	}
+
+	// Parse notification
+	var notif Notification
+	if methodBytes, ok := raw["method"]; ok {
+		if err := json.Unmarshal(methodBytes, &notif.Method); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal method: %w", err)
+		}
+	}
+
+	if paramsBytes, ok := raw["params"]; ok && len(paramsBytes) > 0 {
+		if err := json.Unmarshal(paramsBytes, &notif.Params); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal params: %w", err)
+		}
+	}
+
+	notif.JSONRPC = "2.0"
+	return &notif, nil
+}
+
 // Close closes the JSON-RPC connection
 func (j *JSONRPC) Close() error {
 	j.mu.Lock()

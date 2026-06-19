@@ -133,3 +133,62 @@ type Content struct {
 	Type string `json:"type"`
 	Text string `json:"text,omitempty"`
 }
+
+// Prompt represents an MCP prompt
+type Prompt struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// ListPromptsResult represents the result of listing prompts
+type ListPromptsResult struct {
+	Prompts []Prompt `json:"prompts"`
+}
+
+// GetPromptParams represents parameters for getting a prompt
+type GetPromptParams struct {
+	Name string `json:"name"`
+}
+
+// GetPromptResult represents the result of getting a prompt
+type GetPromptResult struct {
+	Prompt Prompt `json:"prompt"`
+}
+
+// Resource represents an MCP resource
+type Resource struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// ListResourcesResult represents the result of listing resources
+type ListResourcesResult struct {
+	Resources []Resource `json:"resources"`
+}
+
+// ReadResourceParams represents parameters for reading a resource
+type ReadResourceParams struct {
+	Name string `json:"name"`
+}
+
+// ResourceContent represents the content of a resource
+type ResourceContent struct {
+	Type    string `json:"type"`
+	Content string `json:"content"`
+}
+
+// ReadResourceResult represents the result of reading a resource
+type ReadResourceResult struct {
+	Content ResourceContent `json:"content"`
+}
+
+// ResourceTemplate represents a resource template
+type ResourceTemplate struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// ListResourceTemplatesResult represents the result of listing resource templates
+type ListResourceTemplatesResult struct {
+	Templates []ResourceTemplate `json:"templates"`
+}
