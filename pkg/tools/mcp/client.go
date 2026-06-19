@@ -199,7 +199,7 @@ func (t *ToolWrapper) Parameters() map[string]interface{} {
 }
 
 // Execute executes the tool via the MCP client
-func (t *ToolWrapper) Execute(ctx *ExecutionContext, args map[string]interface{}) (interface{}, error) {
+func (t *ToolWrapper) Execute(ctx *tools.ExecutionContext, args map[string]interface{}) (interface{}, error) {
 	result, err := t.client.CallTool(context.Background(), t.name, args)
 	if err != nil {
 		return nil, err
